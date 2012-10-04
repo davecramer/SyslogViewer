@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+      <title>My Twitter Search</title>
+      <link rel=stylesheet href="http://enyojs.com/enyo-2.0.1/enyo.css">
+      <script src="enyo.js"></script>
+        <script src="package.js"></script>
+      <script>
+
+
+
+
+      </script>
+    </head>
+
+    <body>
+
+        <script>
+            var socket = new WebSocket("ws://localhost:8080/services/echo");
+
+            socket.onmessage = function(event) {
+
+                logList.processSearchResults(event.data);
+            }
+
+            socket.onopen = function(event) {
+
+            };
+
+            socket.onclose = function(event) {
+            };
+
+            enyo.kind( {
+                name: "LogList",
+                kind: "FittableRows",
+
+                classes: 'enyo-fit',
+                published: {data: [] },
+                components: [
+                    {tag: 'input', name: 'searchTerm'},
+                    {tag: 'button', content: 'Search', ontap: 'search'},
+                    {kind: "List", name: 'list', fit: true,  onSetupItem: "setupItem", components: [
+                        {name: 'id', style: "display:inline-block; width:10%" },
+                        {name: 'date', style: "display:inline-block; width:10%"},
+                        {name: 'facility', style: "display:inline-block; width:10%"},
+                        {name: 'level', style: "display:inline-block; width:10%"},
+                        {name: 'msg', style: "display:inline-block"}
+                    ]}
+                ],
+
+                setupItem: function(inSender, inEvent) {
+                    // given some available data.
+                    var logLine = this.data[inEvent.index];
+                    this.$.id.setContent(logLine.id);
+                    this.$.date.setContent(logLine.date);
+                    this.$.facility.setContent(logLine.facility);
+                    this.$.level.setContent(logLine.level);
+                    this.$.msg.setContent(logLine.message);
+
+
+                },
+                setData: function(newData){
+                    this.data = newData
+                    this.$.list.setCount(this.data.length)
+                    this.$.list.reset();
+
+                },
+
+
+
+
+
+                search: function() {
+                    var searchTerm = this.$.searchTerm.hasNode().value;
+                    socket.send('search:'+searchTerm)
+
+                },
+                processSearchResults: function(inResponse) {
+                    if (!inResponse) return;
+                    var json = enyo.json.parse(inResponse)
+                    this.setData(json)
+                    //enyo.forEach(json, this.addLog, this);
+                    this.$.list.refresh();
+                }
+            })
+            var logList = new LogList();
+            logList.renderInto(document.body);
+
+        </script>
+    </body>
+
+</html>
