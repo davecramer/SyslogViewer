@@ -2,12 +2,8 @@ package com.xtuple.syslog
 
 import org.vertx.groovy.core.Vertx
 import org.vertx.groovy.core.http.*
-import org.vertx.groovy.core.streams.Pump
 import groovy.sql.Sql
-import groovy.json.JsonBuilder
-import groovy.json.StreamingJsonBuilder
 import org.vertx.java.core.json.JsonArray
-import org.codehaus.jackson.map.util.JSONPObject
 import org.vertx.java.core.json.JsonObject
 
 /**
