@@ -79,6 +79,6 @@ class LogViewer {
         ws.writeTextFrame(jsonArray.encode())
       }
 
-    }.listen(8080, "localhost")
+    }.listen(8080)
   }
 }
