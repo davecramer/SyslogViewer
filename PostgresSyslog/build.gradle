@@ -1,0 +1,32 @@
+apply plugin: 'groovy'
+apply plugin: 'java'
+
+repositories {
+        mavenCentral()
+}
+
+dependencies {
+        groovy group: 'org.codehaus.groovy', name: 'groovy', version: '1.8.8'
+        compile group: 'org.codehaus.groovy', name: 'groovy', version: '1.8.8'
+        compile group: 'joda-time', name: 'joda-time', version: '2.1'
+        compile group: 'com.sun.jna', name: 'jna', version: '3.0.9'
+        compile group: 'commons-pool', name: 'commons-pool', version: '1.5.7'
+        compile group: 'log4j', name: 'log4j', version: '1.2.6'
+        compile group: 'org.vert-x', name: 'vertx-core', version: '1.2.3.final'
+        compile group: 'org.vert-x', name: 'vertx-platform', version: '1.2.3.final'
+        compile group: 'org.vert-x', name: 'vertx-lang-java', version: '1.2.3.final'
+        compile group: 'org.vert-x', name: 'vertx-lang-groovy', version: '1.2.3.final'
+        compile files('lib/syslogserver.jar', 'lib/postgresql.jar')
+}
+
+task compile << {
+    println 'compiling classes'
+}
+//task printSourceSets {
+//      println sourceSets.main.runtimeClasspath.asPath
+//}
+
+task(runSimple, dependsOn:'classes', type: JavaExec ){
+        classpath=sourceSets.main.runtimeClasspath
+        main='com.xtuple.syslog.LogViewer'
+}

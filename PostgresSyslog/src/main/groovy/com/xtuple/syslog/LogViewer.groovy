@@ -23,6 +23,7 @@ class LogViewer {
     vertx = Vertx.newVertx()
 
     new LogViewer().startServer()
+    println "listening on port 8080"
 
     while(true)
     {
