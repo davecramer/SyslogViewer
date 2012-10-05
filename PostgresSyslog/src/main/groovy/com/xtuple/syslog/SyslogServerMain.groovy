@@ -7,7 +7,13 @@ import org.productivity.java.syslog4j.server.SyslogServerIF;
 import org.productivity.java.syslog4j.server.impl.event.printstream.FileSyslogServerEventHandler;
 import org.productivity.java.syslog4j.server.impl.event.printstream.SystemOutSyslogServerEventHandler;
 import org.productivity.java.syslog4j.server.impl.net.tcp.TCPNetSyslogServerConfigIF;
-import org.productivity.java.syslog4j.util.SyslogUtility;
+import org.productivity.java.syslog4j.util.SyslogUtility
+import org.vertx.groovy.core.Vertx
+import org.vertx.groovy.core.http.RouteMatcher
+import org.vertx.groovy.core.http.ServerWebSocket
+import groovy.sql.Sql
+import org.vertx.java.core.json.JsonArray
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * This class provides a command-line interface for Syslog4j
@@ -23,8 +29,10 @@ import org.productivity.java.syslog4j.util.SyslogUtility;
 public class SyslogServerMain
 {
 	public static boolean CALL_SYSTEM_EXIT_ON_FAILURE = true;
-	
-	public static class Options {
+    public static Vertx vertx = Vertx.newVertx()
+    public  static  server
+
+  public static class Options {
 		public String protocol = null;
 		public String fileName = null;
 		public boolean append = false;
@@ -162,9 +170,57 @@ public class SyslogServerMain
 		}
 
 		SyslogServer.getThreadedInstance(options.protocol);
-		
+
+        startServer()
+
 		while(true) {
 			SyslogUtility.sleep(1000);
 		}
 	}
+  static void startServer ()
+  {
+    def routeMatcher = new RouteMatcher()
+
+    routeMatcher.get("/logs/postgresql/:file") { req ->
+      def file = req.params['file']
+      if ( file ==null ) file= 'index.html'
+      req.response.sendFile "web/$file"
+
+    }
+    routeMatcher.getWithRegEx("/logs/postgresql/(.*)") { req ->
+      def file = req.params.param0
+      if ( file ==null ) file= 'index.html'
+      req.response.sendFile "web/$file"
+
+    }
+
+
+    server = vertx.createHttpServer()
+    server.requestHandler(routeMatcher.asClosure())
+
+    server.websocketHandler{ ServerWebSocket ws ->
+      ws.dataHandler {  data ->
+        def params = data.toString().split(':')
+        Sql sql = Sql.newInstance('jdbc:postgresql://localhost/syslog','test','')
+        JsonArray jsonArray = new JsonArray()
+
+
+        sql.eachRow('select * from log') {row ->
+          JsonObject jsonObject = new JsonObject()
+
+          jsonObject.putNumber('id', row.id)
+          jsonObject.putString('date', row.date.toString())
+          jsonObject.putString('facility', row.facility)
+          jsonObject.putString('level', row.level)
+          jsonObject.putString('message', row.message)
+          jsonArray.add(jsonObject)
+        }
+
+
+        sql.close()
+        ws.writeTextFrame(jsonArray.encode())
+      }
+
+    }.listen(8080)
+  }
 }

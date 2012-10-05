@@ -26,7 +26,13 @@ task compile << {
 //      println sourceSets.main.runtimeClasspath.asPath
 //}
 
-task(runSimple, dependsOn:'classes', type: JavaExec ){
+task runSimple( dependsOn:'classes', type: JavaExec ) {
         classpath=sourceSets.main.runtimeClasspath
         main='com.xtuple.syslog.LogViewer'
+
+}
+task syslogServer( dependsOn: 'classes', type: JavaExec ) {
+  classpath=sourceSets.main.runtimeClasspath
+  main='com.xtuple.syslog.SyslogServerMain'
+  args=['-p', '5150', 'udp']
 }

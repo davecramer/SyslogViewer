@@ -22,19 +22,30 @@ class LogViewer {
   {
     vertx = Vertx.newVertx()
 
-    new LogViewer().startServer()
-    println "listening on port 8080"
+    def serverThread = new Thread()
+    serverThread.daemon=true
 
-    while(true)
-    {
-      try {
-        sleep(1000)
+    serverThread.start {
+      new LogViewer().startServer()
+      println "listening on port 8080"
+
+      while(true)
+      {
+        try
+        {
+          sleep(1000)
+
+        }
+        catch (Exception ex)
+        {
+          ex.printStackTrace()
+        }
       }
-      catch(Throwable th)
-      {}
-    }
-  }
 
+    }
+
+    println 'foo'
+  }
   void startServer ()
   {
     def routeMatcher = new RouteMatcher()
